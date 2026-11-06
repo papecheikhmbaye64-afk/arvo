@@ -66,3 +66,15 @@
 
 :root { --grad-a: #17191c; --grad-b: #454d55; --danger-solid: #b84e56; --toast-link: #dce9f4; }
 :root[data-theme="dark"] { --grad-a: #f4f5f6; --grad-b: #c1c6cb; --toast-link: #b7d9f3; }
+
+/* Message éphémère : surface inversée (sombre en clair, claire en sombre). */
+:root { --toast-bg: #202327; --toast-fg: #ffffff; --toast-edge: rgba(255, 255, 255, 0.12); }
+:root[data-theme="dark"] { --toast-bg: #f2f3f4; --toast-fg: #17191a; --toast-link: #2a6494; --toast-edge: rgba(0, 0, 0, 0.1); }
+
+/* Liens et actions discrètes. */
+:root { --link: #35393c; }
+:root[data-theme="dark"] { --link: #d0d3d6; }
+
+/* Jauge budgétaire. */
+:root { --gauge-track: rgba(20, 21, 22, 0.08); --gauge-ok: #2e9467; --gauge-warn: #cf7f14; --gauge-over: #d12b3a; }
+:root[data-theme="dark"] { --gauge-track: rgba(255, 255, 255, 0.1); --gauge-ok: #4fc08a; --gauge-warn: #e9a13d; --gauge-over: #ff6b78; }

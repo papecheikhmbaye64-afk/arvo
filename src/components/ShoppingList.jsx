@@ -4,6 +4,7 @@ import { Banner, Photo } from './Photo.jsx';
 import SwipeRow from './SwipeRow.jsx';
 import ItemSheet from './ItemSheet.jsx';
 import CurrencyPicker from './CurrencyPicker.jsx';
+import BudgetGauge, { BudgetSheet } from './BudgetGauge.jsx';
 import { guessCategory } from '../lib/categories.js';
 import { MAX_PRICE_MINOR, itemsTotal, uid } from '../lib/storage.js';
 import { convertMinor, currencySymbol, formatNumber, toMinor } from '../lib/money.js';
@@ -27,6 +28,7 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(null);
   const [picking, setPicking] = useState(false);
+  const [budgeting, setBudgeting] = useState(false);
   const nameRef = useRef(null);
   const priceRef = useRef(null);
   const priceField = useAmountField(price, setPrice, currency);
@@ -68,16 +70,17 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
   const changeCurrency = (code) => {
     setPicking(false);
     if (code === currency) return;
-    if (!items.length) { patch({ currency: code }); return; }
+    if (!items.length && !state.budget) { patch({ currency: code }); return; }
     const r = fx.rate(currency, code);
     if (r == null) { toast({ text: 'Taux indisponibles : impossible de convertir vos prix pour le moment.' }); return; }
-    const before = { items, currency };
-    patch({ currency: code, items: items.map((i) => ({ ...i, priceMinor: convertMinor(i.priceMinor, currency, code, r) })) });
+    const before = { items, currency, budget: state.budget };
+    patch({ currency: code, budget: convertMinor(state.budget, currency, code, r), items: items.map((i) => ({ ...i, priceMinor: convertMinor(i.priceMinor, currency, code, r) })) });
     toast({ text: `Prix convertis en ${code}`, undo: () => patch(before) });
   };
 
   return (
     <>
+      <div className="total-stack">
       <section className="card total-card" aria-labelledby="total-label">
         <Banner name="hero-market" />
         <div className="total-body">
@@ -112,6 +115,9 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
           </div>
         </div>
       </section>
+
+      <BudgetGauge total={total} budget={state.budget} currency={currency} hidden={state.totalHidden} onEdit={() => setBudgeting(true)} />
+      </div>
 
       <form className="card composer" onSubmit={add} noValidate>
         <label className="sr-only" htmlFor="new-name">Nom de l’article</label>
@@ -184,6 +190,7 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
           onDelete={() => { const it = editing; setEditing(null); remove(it); }}
         />
       )}
+      {budgeting && <BudgetSheet budget={state.budget} currency={currency} onClose={() => setBudgeting(false)} onSave={(budget) => { patch({ budget }); setBudgeting(false); }} />}
       {picking && <CurrencyPicker title="Devise de la liste" current={currency} codes={fx.currencies()} onPick={changeCurrency} onClose={() => setPicking(false)} />}
     </>
   );

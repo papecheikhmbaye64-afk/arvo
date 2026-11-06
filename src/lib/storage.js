@@ -7,6 +7,7 @@ export const DEFAULTS = {
   theme: null,
   totalHidden: false,
   hintSeen: false,
+  budget: 0, // unités mineures de la devise de la liste ; 0 = pas de budget
   conv: { from: 'XOF', to: 'EUR', amount: '10.000' }
 };
 
@@ -26,6 +27,7 @@ export function load() {
       theme: d.theme === 'light' || d.theme === 'dark' ? d.theme : null,
       totalHidden: d.totalHidden === true,
       hintSeen: !!d.hintSeen,
+      budget: Number.isSafeInteger(d.budget) && d.budget > 0 && d.budget <= MAX_PRICE_MINOR ? d.budget : 0,
       conv: {
         from: /^[A-Z]{3}$/.test(d.conv?.from) ? d.conv.from : DEFAULTS.conv.from,
         to: /^[A-Z]{3}$/.test(d.conv?.to) ? d.conv.to : DEFAULTS.conv.to,
