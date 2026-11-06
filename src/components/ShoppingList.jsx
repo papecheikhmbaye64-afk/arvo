@@ -21,10 +21,12 @@ function Thumb({ cat }) {
   );
 }
 
-export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
+export default function ShoppingList({ state, patch, fx, toast, goConvert, draft, setDraft }) {
   const { items, currency } = state;
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
+  // Le brouillon vit dans l'App : changer d'onglet ne fait plus perdre l'article en cours de saisie.
+  const { name, price } = draft;
+  const setName = (v) => setDraft((d) => ({ ...d, name: v }));
+  const setPrice = (v) => setDraft((d) => ({ ...d, price: v }));
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(null);
   const [picking, setPicking] = useState(false);
@@ -45,9 +47,9 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
     if (!n) { setError('Écrivez d’abord le nom de l’article.'); nameRef.current?.focus(); return; }
     const minor = price.trim() ? toMinor(price, currency) : 0;
     if (minor == null) { setError('Ce prix n’est pas valide.'); priceRef.current?.focus(); return; }
-    if (minor > MAX_PRICE_MINOR) { setError('Ce prix est trop élevé.'); return; }
+    if (minor > MAX_PRICE_MINOR) { setError('Ce prix est trop élevé.'); priceRef.current?.focus(); return; }
     setItems((list) => [{ id: uid(), name: n, priceMinor: minor, qty: 1, done: false, cat: guessCategory(n) }, ...list]);
-    setName(''); setPrice(''); setError('');
+    setDraft({ name: '', price: '' }); setError('');
     nameRef.current?.focus();
   };
 
@@ -62,9 +64,19 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
   };
 
   const clearDone = () => {
-    const snapshot = items;
+    const order = items.map((i) => i.id);
+    const removed = items.filter((i) => i.done);
     setItems((list) => list.filter((i) => !i.done));
-    toast({ text: plural(done.length, 'article retiré', 'articles retirés'), undo: () => setItems(() => snapshot) });
+    // « Annuler » ne remet que les articles retirés, à leur place : ce qui a été ajouté ou modifié entre-temps reste.
+    toast({
+      text: plural(removed.length, 'article retiré', 'articles retirés'),
+      undo: () => setItems((list) => {
+        const have = new Set(list.map((i) => i.id));
+        const back = removed.filter((i) => !have.has(i.id));
+        const rank = (i) => { const k = order.indexOf(i.id); return k === -1 ? -1 : k; };
+        return [...list, ...back].sort((a, b) => rank(a) - rank(b));
+      })
+    });
   };
 
   const changeCurrency = (code) => {
@@ -186,7 +198,11 @@ export default function ShoppingList({ state, patch, fx, toast, goConvert }) {
       {editing && (
         <ItemSheet
           item={editing} currency={currency} onClose={() => setEditing(null)}
-          onSave={(next) => { setItems((l) => l.map((i) => (i.id === editing.id ? { ...i, ...next } : i))); setEditing(null); }}
+          onSave={(next) => {
+            // Renommer un article met aussi à jour son rayon, comme à la création.
+            setItems((l) => l.map((i) => (i.id === editing.id ? { ...i, ...next, cat: next.name !== i.name ? guessCategory(next.name) : i.cat } : i)));
+            setEditing(null);
+          }}
           onDelete={() => { const it = editing; setEditing(null); remove(it); }}
         />
       )}

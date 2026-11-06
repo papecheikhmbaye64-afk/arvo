@@ -64,4 +64,9 @@ test('rayons : reconnaissance par mots entiers', () => {
   assert.equal(guessCategory('Gâteau au chocolat'), 'bakery');   // « eau » dans « gâteau » ne déclenche pas les boissons
   assert.equal(guessCategory('Liquide vaisselle'), 'home');
   assert.equal(guessCategory('Truc'), 'other');
+  assert.equal(guessCategory('Jus d’orange'), 'drinks');
+  assert.equal(guessCategory('Eau de javel'), 'home');
+  assert.equal(guessCategory('Tomate concentrée'), 'pantry');
+  assert.equal(guessCategory('Lait en poudre'), 'pantry');
+  assert.equal(guessCategory('Sardines en boîte'), 'pantry');
 });

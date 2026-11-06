@@ -36,6 +36,7 @@ export default function App() {
   const [state, setState] = useState(load);
   const [route, setRoute] = useState(routeFromHash);
   const [toast, setToast] = useState(null);
+  const [draft, setDraft] = useState({ name: '', price: '' }); // article en cours de saisie (non enregistré)
   const [fxTick, setFxTick] = useState(0);
   const toastId = useRef(0);
 
@@ -58,6 +59,8 @@ export default function App() {
   }, []);
 
   const showToast = useCallback((t) => setToast({ ...t, id: ++toastId.current }), []);
+  // Référence stable : sinon le minuteur de la notification repartait à zéro à chaque saisie ou mise à jour des taux.
+  const dismissToast = useCallback(() => setToast(null), []);
   const go = (r) => { location.hash = `#/${r}`; };
   const total = useMemo(() => itemsTotal(state.items), [state.items]);
 
@@ -88,12 +91,12 @@ export default function App() {
             <h1>{ROUTES[route]}</h1>
           </div>
           {route === 'courses'
-            ? <ShoppingList state={state} patch={patch} fx={fx} toast={showToast} goConvert={goConvert} />
+            ? <ShoppingList state={state} patch={patch} fx={fx} toast={showToast} goConvert={goConvert} draft={draft} setDraft={setDraft} />
             : <Converter state={state} patch={patch} fx={fx} hidden={state.totalHidden} listTotal={{ minor: total, currency: state.currency }} />}
         </main>
       </div>
 
-      <Toast toast={toast} onDismiss={() => setToast(null)} />
+      <Toast toast={toast} onDismiss={dismissToast} />
 
       <nav className="tabbar" aria-label="Navigation principale">
         <a href="#/courses" className={route === 'courses' ? 'is-active' : ''} aria-current={route === 'courses' ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go('courses'); }}>

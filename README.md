@@ -6,16 +6,16 @@ Deux outils, rien d'autre : une **liste de courses** dont le total se calcule se
 npm install
 npm run dev        # http://localhost:5173 (même Wi-Fi : l'adresse réseau est affichée)
 npm run build      # produit dist/
-npm test           # 7 tests : argent, parité CFA, taux, rayons
+npm test           # tests : argent, parité CFA, taux, rayons
 ```
 
 ## Ce que fait l'appli
 - **Courses** : nom + prix (optionnel) + quantité ; total en direct ; case « dans le panier » ; rayon reconnu automatiquement (Fruits & légumes, Boulangerie…) ; modification en touchant la ligne ; devise de la liste modifiable (les prix sont alors convertis, avec « Annuler »).
-- **Suppression** : balayage vers la gauche (seuil, fond rouge qui s'arme, vibration légère sur mobile), ou touche Suppr, ou bouton visible au survol / au clavier. Toute suppression propose « Annuler » pendant 5 secondes.
+- **Suppression** : balayage vers la gauche (seuil, fond rouge qui s'arme, vibration légère sur mobile), ou touche Suppr sur une ligne, ou bouton « Supprimer » dans la fiche de l'article. Toute suppression propose « Annuler » pendant 5 secondes ; les fiches se ferment aussi en glissant leur poignée vers le bas.
 - **Devises** : deux devises au choix (recherche parmi ~160), montant saisi avec séparateurs automatiques, résultat immédiat, inversion en un geste, « utiliser le total de mes courses ».
 - **Taux** : ExchangeRate-API (sans clé), cache 6 h, dernier relevé conservé hors ligne, jamais de valeur inventée. La parité fixe 1 € = 655,957 FCFA est appliquée localement : EUR ↔ XOF/XAF fonctionne sans réseau.
 - **Thème** : suit le système ; le bouton soleil/lune force clair ou sombre (mémorisé).
-- **Photos** : voir `PHOTOS.md` (emplacements prêts, prompts fournis, rien à coder).
+- **Photos** : déposer les images dans `public/photos/` (`hero-market.jpg`, `hero-exchange.jpg`, `empty-basket.jpg`, `cat-<rayon>.jpg`) ; si un fichier manque, le fond d'origine reste.
 
 ## Structure
 | Chemin | Rôle |

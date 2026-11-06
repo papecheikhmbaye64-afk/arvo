@@ -36,7 +36,9 @@ export default function Converter({ state, patch, fx, hidden = false, listTotal 
   const invalid = amount.trim() && minor == null;
 
   const useTotal = () => {
-    setConv({ from: listTotal.currency, amount: formatAmountInput(minorToInput(listTotal.minor, listTotal.currency), listTotal.currency, { paste: true }).text });
+    const cur = listTotal.currency;
+    // Si la devise d'arrivée est déjà celle de la liste, on la change : sinon la « conversion » serait un aller-retour sans effet.
+    setConv({ from: cur, to: to === cur ? (cur === 'EUR' ? 'USD' : 'EUR') : to, amount: formatAmountInput(minorToInput(listTotal.minor, cur), cur, { paste: true }).text });
   };
 
   return (
@@ -84,8 +86,10 @@ export default function Converter({ state, patch, fx, hidden = false, listTotal 
       {rate == null && (
         <div className="notice" role="status">
           <Icon name="alert" size={20} />
-          <p>{st.loading ? 'Chargement des taux de change…' : `Les taux de change ne sont pas disponibles${st.error ? ` (${st.error})` : ''}. Vérifiez votre connexion.`}</p>
-          {!st.loading && <button type="button" className="link-btn" onClick={() => fx.refresh(true)}>Réessayer</button>}
+          <p>{st.loading ? 'Chargement des taux de change…'
+            : fx.available() ? `Aucun taux n’est disponible pour ${from} → ${to}. Choisissez une autre devise.`
+            : `Les taux de change ne sont pas disponibles${st.error ? ` (${st.error})` : ''}. Vérifiez votre connexion.`}</p>
+          {!st.loading && !fx.available() && <button type="button" className="link-btn" onClick={() => fx.refresh(true)}>Réessayer</button>}
         </div>
       )}
       {rate != null && st.stale && !pegged && (
